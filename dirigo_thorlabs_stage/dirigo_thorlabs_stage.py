@@ -127,6 +127,8 @@ class ThorlabsLinearMotor(LinearStage): # alt name: Linear brushless?
         motor_config = self._channel.LoadMotorConfiguration(self._channel.DeviceID)  
         device_settings = self._channel.MotorDeviceSettings
 
+        self._prev_position = self.position # BUG this doesn't work if at 0.0 at startup (see note on BUG in position getter)
+
     @cached_property 
     def device_info(self) -> ThorlabsLinearMotorInfo:
         """Returns an object describing permanent properties of the stage."""
@@ -190,6 +192,22 @@ class ThorlabsLinearMotor(LinearStage): # alt name: Linear brushless?
     def moving(self) -> bool:
         """Return True if the stage axis is currently moving."""
         return self._channel.IsDeviceBusy
+
+    def move_velocity(self, velocity: units.Velocity):
+        """Initiates movement at a constant velocity until stopped."""
+        if not isinstance(velocity, units.Velocity):
+            raise ValueError("velocity must be given in units.Velocity")
+        if velocity > 0:
+            motor_direction = MotorDirection.Forward
+        else:
+            velocity = abs(velocity)
+            motor_direction = MotorDirection.Backward
+        
+        unit_conv = self._channel.UnitConverter
+        unit_type = unit_conv.UnitType.Velocity
+
+        v_device_units = unit_conv.RealToDeviceUnit(Decimal(velocity*1000), unit_type)
+        self._channel.MoveContinuousAtVelocity(motor_direction, v_device_units)
 
     def stop(self):
         """Halts motion."""
@@ -255,13 +273,18 @@ if __name__ == "__main__":
 
     x_config = {
         "axis": "x",
-        "position_limits": {"min": "0 mm", "max": "85 mm"} 
+        "position_limits": {"min": "1 mm", "max": "99 mm"} 
     }
     y_config = {
         "axis": "y",
-        "position_limits": {"min": "0 mm", "max": "55 mm"} 
+        "position_limits": {"min": "1 mm", "max": "74 mm"} 
     }
 
     stage = BBD102Stage(x_config, y_config)
 
-    None
+    print(stage.x.position)
+    stage.x.move_velocity(units.Velocity('0.35 mm/s'))
+
+    time.sleep(3)
+    stage.x.stop()
+    print(stage.x.position)
