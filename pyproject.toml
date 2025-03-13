@@ -16,4 +16,5 @@ dependencies = [
 
 [project.entry-points."dirigo_stages"]
 bbd102 = "dirigo_thorlabs_stage:BBD102Stage"
+bbd202 = "dirigo_thorlabs_stage:BBD202Stage"
 # ... many others to implement

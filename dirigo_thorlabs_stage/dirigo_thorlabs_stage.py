@@ -265,6 +265,14 @@ class ThorlabsLinearMotor(LinearStage): # alt name: Linear brushless?
         self._channel.SetVelocityParams(vel_params)
 
 
+class BBD202Stage(BBD102Stage):
+    """
+    Communicate with Thorlabs BBD202 brushless motor controller, which usually
+    controls MLS203, a high-speed 2-axis linear motor stage.
+    
+    Alias for BBD102, since the control under Kinesis API is the same (as far as I know).
+    """
+    pass
 
 
 
