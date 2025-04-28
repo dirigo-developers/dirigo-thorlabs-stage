@@ -12,10 +12,13 @@ authors = [
 license = {text = "MIT"}
 dependencies = [
     "dirigo",
-    "pythonnet>=3.0.1" # Required to used the .NET framework
+    "pythonnet>=3.0.1", # Required to used the .NET framework
+    "pyserial" # For MCM3000
 ]
 
 [project.entry-points."dirigo_stages"]
 bbd102 = "dirigo_thorlabs_stage:BBD102Stage"
 bbd202 = "dirigo_thorlabs_stage:BBD202Stage"
-# ... many others to implement
+
+[project.entry-points."dirigo_scanners"]
+mcm3000 = "dirigo_thorlabs_stage:MCM3000"
