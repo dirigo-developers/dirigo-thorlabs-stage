@@ -70,6 +70,11 @@ class BBD102Stage(MultiAxisStage):
 
         self._x_axis = ThorlabsLinearMotor(self._controller, **x_config)
         self._y_axis = ThorlabsLinearMotor(self._controller, **y_config)
+
+        if not self._x_axis.homed:
+            self._x_axis.home(blocking=False)
+        if not self._y_axis.homed:
+            self._y_axis.home(blocking=False)
     
     @property
     def x(self):
@@ -131,7 +136,8 @@ class ThorlabsLinearMotor(LinearStage): # alt name: Linear brushless?
         motor_config = self._channel.LoadMotorConfiguration(self._channel.DeviceID)  
         device_settings = self._channel.MotorDeviceSettings
 
-        self._prev_position = self.position # BUG this doesn't work if at 0.0 at startup (see note on BUG in position getter)
+        time.sleep(0.1) # wait 100 ms for axis to stabilize before taking initial position
+        self._prev_position = self.position # BUG this doesn't work if at exactly 0.0 at startup (see note on BUG in position getter)
 
     @cached_property 
     def device_info(self) -> ThorlabsLinearMotorInfo:
