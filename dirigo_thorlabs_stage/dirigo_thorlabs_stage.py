@@ -1,4 +1,5 @@
 import time
+from typing import Optional
 from dataclasses import dataclass
 from enum import IntEnum
 from functools import cached_property
@@ -321,16 +322,22 @@ class MCM3000Controller:
             write_timeout=None
         )
 
-    def make_command(self, command: MCM3000Enums, mode: MCM3000Enums) -> bytearray:
+    def make_command(self, command: MCM3000Enums, mode: MCM3000Enums, data: Optional[int] = None) -> bytearray:
         cmd = bytearray()
 
         # 6 header bytes:
         cmd.append(command)         # byte0: command
         cmd.append(0x04)            # byte1: constant
-        cmd.append(self._channel)   # byte2: channel identifier
+        if command == MCM3000Enums.CMD_GO_TO_POSITION:
+            cmd.append(0x06)
+        else:
+            cmd.append(self._channel)   # byte2: channel identifier
         cmd.append(mode)            # byte3: command mode/sub-command
         cmd.append(0x00)            # bytes4-5: empty
-        cmd.append(0x00) 
+        cmd.append(0x00)
+        if data:
+            cmd.extend(self._channel.to_bytes(2, 'little'))
+            cmd.extend(data.to_bytes(4, 'little', signed=True))
         return cmd
 
     def send_receive(self, cmd: bytearray):
@@ -353,7 +360,7 @@ class MCM3000Controller:
         return self._interpret_response(response)
     
     def _interpret_response(self, resp: bytes):
-        if resp[0] == MCM3000Enums.RESP_QUERY_POSITION:
+        if resp and resp[0] == MCM3000Enums.RESP_QUERY_POSITION:
             return int.from_bytes(resp[8:], byteorder='little', signed=True)
 
 
@@ -370,7 +377,7 @@ class MCM3000(ObjectiveZScanner):
     def _position_command(self):
         return self._controller.make_command(
             command=MCM3000Enums.CMD_QUERY_POSITION,
-            mode=0
+            mode=0,
         )
     
     @property
@@ -388,9 +395,10 @@ class MCM3000(ObjectiveZScanner):
         """
         cmd = self._controller.make_command(
             command=MCM3000Enums.CMD_GO_TO_POSITION,
-            mode=0
+            mode=0,
+            data=round(position / self.LENGTH_PER_COUNT)
         )
-        print(cmd)
+        self._controller.send_receive(cmd)
 
     @property
     def moving(self) -> bool:   
@@ -477,5 +485,6 @@ if __name__ == "__main__":
 
     scanner = MCM3000(axis='z', com_port=32)
     scanner.position
+    scanner.move_to(units.Position('1.4 mm'))
 
     
