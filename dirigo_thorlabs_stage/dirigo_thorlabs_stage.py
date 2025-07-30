@@ -366,7 +366,6 @@ class MCM3000(ObjectiveZScanner):
         z_channel = 2
         self._controller = MCM3000Controller(com_port, channel=z_channel)
 
-
     @cached_property
     def _position_command(self):
         return self._controller.make_command(
@@ -387,7 +386,11 @@ class MCM3000(ObjectiveZScanner):
         Choose whether to return immediately (blocking=False, default) or to
         wait until finished moving (blocking=True).
         """
-        pass
+        cmd = self._controller.make_command(
+            command=MCM3000Enums.CMD_GO_TO_POSITION,
+            mode=0
+        )
+        print(cmd)
 
     @property
     def moving(self) -> bool:   
