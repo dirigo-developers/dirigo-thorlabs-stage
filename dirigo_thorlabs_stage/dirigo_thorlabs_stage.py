@@ -293,6 +293,7 @@ class MCM3000Enums(IntEnum):
     RESP_QUERY_POSITION             = 0x0B
     CMD_GO_TO_POSITION              = 0x53
     CMD_QUERY_REQUEST_MOTOR_STATUS  = 0x80
+    NO_MODE                         = 0x00
 
 
 class MCM3000Controller:
@@ -318,24 +319,26 @@ class MCM3000Controller:
         self._serial_port = serial.Serial(
             port=f"COM{self._port}",
             baudrate=self._baud_rate,
-            timeout=3,
-            write_timeout=None
+            timeout=1,
+            write_timeout=1
         )
 
-    def make_command(self, command: MCM3000Enums, mode: MCM3000Enums, data: Optional[int] = None) -> bytearray:
+    def make_command(self, 
+                     command: MCM3000Enums, 
+                     mode: MCM3000Enums = MCM3000Enums.NO_MODE, 
+                     data: Optional[int] = None) -> bytearray:
         cmd = bytearray()
 
-        # 6 header bytes:
+        # 6 Header bytes:
         cmd.append(command)         # byte0: command
         cmd.append(0x04)            # byte1: constant
-        if command == MCM3000Enums.CMD_GO_TO_POSITION:
-            cmd.append(0x06)
-        else:
-            cmd.append(self._channel)   # byte2: channel identifier
+        cmd.append(0x06 if command is MCM3000Enums.CMD_GO_TO_POSITION
+                   else self._channel)  # byte6: constant or channel identifier
         cmd.append(mode)            # byte3: command mode/sub-command
-        cmd.append(0x00)            # bytes4-5: empty
-        cmd.append(0x00)
-        if data:
+        cmd.extend(b'\x00\x00')     # bytes4-5: empty
+
+        # Data bytes, if applicable
+        if data is not None:
             cmd.extend(self._channel.to_bytes(2, 'little'))
             cmd.extend(data.to_bytes(4, 'little', signed=True))
         return cmd
@@ -484,7 +487,7 @@ if __name__ == "__main__":
     # print(stage.x.position)
 
     scanner = MCM3000(axis='z', com_port=32)
-    scanner.position
-    scanner.move_to(units.Position('1.4 mm'))
+    print("Current position", scanner.position)
+    scanner.move_to(units.Position('-0.42 mm'))
 
     
