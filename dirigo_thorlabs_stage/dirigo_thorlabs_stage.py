@@ -40,7 +40,10 @@ class BBD102Stage(MultiAxisStage):
     """
     SERIAL_NUMBER_PREFIX = "73" # code Thorlabs uses to identify this device type
 
-    def __init__(self, x_config: dict, y_config: dict, **kwargs):
+    def __init__(self, 
+                 x_config: dict, 
+                 y_config: dict, 
+                 **kwargs):
         # Build the device list, required even when device is known
         DeviceManagerCLI.BuildDeviceList()
 
@@ -89,9 +92,8 @@ class BBD102Stage(MultiAxisStage):
     
     @property
     def z(self):
-        """No z axis motor available."""
-        return None
-        # alternatively we could raise a NotImplementedError?
+        """No z axis motor available. Raises NotImplementedError"""
+        raise NotImplementedError("Z axis does not exist on BBDX02 devices.")
 
 
 @dataclass
