@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dirigo_thorlabs_stage"
-version = "0.1.1"
+version = "0.2.0"
 description = "Plugin to use Thorlabs motorized stages (multiple versions) with Dirigo."
 authors = [
     {name = "T. D. Weber", email = "tweber@mit.edu"}
@@ -15,13 +15,6 @@ dependencies = [
     "pythonnet>=3.0.1", # Required to used the .NET framework
     "pyserial" # For MCM3000
 ]
-
-[project.entry-points."dirigo_stages"]
-bbd102 = "dirigo_thorlabs_stage:BBD102Stage"
-bbd202 = "dirigo_thorlabs_stage:BBD202Stage"
-
-[project.entry-points."dirigo_scanners"]
-mcm3000 = "dirigo_thorlabs_stage:MCM3000"
 
 # new format
 [project.entry-points."dirigo.devices.stage"]
