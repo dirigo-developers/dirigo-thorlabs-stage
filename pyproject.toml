@@ -12,7 +12,7 @@ authors = [
 license = {text = "MIT"}
 dependencies = [
     "dirigo",
-    "pythonnet>=3.0.1", # Required to used the .NET framework
+    "pythonnet>=3.0.1", # Required to used the .NET framework, for MLS203
     "pyserial" # For MCM3000
 ]
 
