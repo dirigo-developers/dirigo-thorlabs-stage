@@ -4,7 +4,7 @@
 > **Note**  
 > This is a hardware plugin for Dirigo and is not intended to be used as a standalone library. 
 
-![PyPI](https://img.shields.io/pypi/v/dirigo-thorlabs-stage)
+[![PyPI](https://img.shields.io/pypi/v/dirigo-thorlabs-stage)](https://pypi.org/project/dirigo-thorlabs-stage/)
 
 
 ## Supported models
