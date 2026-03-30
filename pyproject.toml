@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dirigo_thorlabs_stage"
-version = "0.1.2"
+version = "0.2.0"
 description = "Plugin to use Thorlabs motorized stages (multiple versions) with Dirigo"
 authors = [
     {name = "T. D. Weber", email = "tweber@mit.edu"}
@@ -23,22 +23,25 @@ classifiers = [
 ]
 dependencies = [
     "dirigo",
-    "pythonnet>=3.0.1", # Required to used the .NET framework
+    "pythonnet>=3.0.1", # Required to used the .NET framework (Kinesis)
     "pyserial" # For MCM3000
 ]
 urls = {"Homepage" = "https://github.com/dirigo-developers/dirigo-thorlabs-stage"}
 
+
 [project.entry-points."dirigo_stages"]
-bbd102 = "dirigo_thorlabs_stage:BBD102Stage"
-bbd202 = "dirigo_thorlabs_stage:BBD202Stage"
+bbd102 = "dirigo_thorlabs_stage.bbdx02:BBD102Stage"
+bbd202 = "dirigo_thorlabs_stage.bbdx02:BBD202Stage"
+prm1z8 = "dirigo_thorlabs_stage.dcservo:PRM1Z8"
 
 [project.entry-points."dirigo_scanners"]
-mcm3000 = "dirigo_thorlabs_stage:MCM3000"
+mcm3000 = "dirigo_thorlabs_stage.mcm3000:MCM3000"
 
 # new format
 [project.entry-points."dirigo.devices.stage"]
-bbd102 = "dirigo_thorlabs_stage:BBD102Stage"
-bbd202 = "dirigo_thorlabs_stage:BBD202Stage"
+bbd102 = "dirigo_thorlabs_stage.bbdx02:BBD102Stage"
+bbd202 = "dirigo_thorlabs_stage.bbdx02:BBD202Stage"
+prm1z8 = "dirigo_thorlabs_stage.dcservo:PRM1Z8"
 
 [project.entry-points."dirigo.devices.objective_actuator"]
 mcm3000 = "dirigo_thorlabs_stage:MCM3000"
