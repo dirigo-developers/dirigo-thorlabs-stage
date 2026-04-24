@@ -156,6 +156,11 @@ class ThorlabsLinearMotor(LinearStage):
         time.sleep(0.1) # wait 100 ms for axis to stabilize before taking initial position
         self._prev_position = units.Position(0) # this may not work if at exactly 0.0 at startup (see note on BUG in position getter)
 
+        # test setting velo profile mode to trapezoidal
+        velo_profile_params = self._channel.GetVelocityProfileParams()
+        velo_profile_params.ProfileMode = velo_profile_params.ProfileMode.Trapezoidal
+        self._channel.SetVelocityProfileParams(velo_profile_params)
+
     @cached_property
     def device_info(self) -> ThorlabsLinearMotorInfo:
         return ThorlabsLinearMotorInfo(
