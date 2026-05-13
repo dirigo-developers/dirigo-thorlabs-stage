@@ -43,7 +43,7 @@ class PRM1Z8(RotationStage):
         Optional override for the Kinesis installation directory.
     """
 
-    POLLING_PERIOD_MS = 100
+    POLLING_PERIOD = units.Time("100 ms")
     CONNECT_SETTLE_S = 0.25
 
     HOME_TIMEOUT = units.Time("60 s")
@@ -57,6 +57,9 @@ class PRM1Z8(RotationStage):
         serial_number: str | None = None,
         controller_kind: DCServoKind = "kcube",
         device_settings_name: str = "PRM1-Z8",
+        backlash_correction: units.Angle = units.Angle("0 deg"),
+        max_velocity: units.AngularVelocity = units.AngularVelocity("25 deg/s"),
+        acceleration: units.AngularAcceleration = units.AngularAcceleration("25 deg/s^2"),
         limits: dict | None = None,
         home_on_connect: bool = True,
         kinesis_dir: str | None = None,
@@ -84,6 +87,11 @@ class PRM1Z8(RotationStage):
         if home_on_connect and not self.homed:
             self.home(blocking=True)
 
+        self._set_backlash(backlash_correction)
+        self.max_velocity = units.AngularVelocity(max_velocity)
+        self.acceleration = units.AngularAcceleration(acceleration)
+
+        self._prev_position = units.Angle(0) # this may not work if at exactly 0.0 at startup (see note on BUG in position getter)
         self._last_max_velocity = None
 
     # -------------------------------------------------------------------------
@@ -124,7 +132,7 @@ class PRM1Z8(RotationStage):
         connect_polling_and_enable(
             device,
             serial_number,
-            polling_period_ms=self.POLLING_PERIOD_MS,
+            polling_period_ms=round(float(self.POLLING_PERIOD)*1000),
             settle_time_s=self.CONNECT_SETTLE_S,
         )
         return device
@@ -142,7 +150,16 @@ class PRM1Z8(RotationStage):
         return float(self._api.common.Decimal.ToDouble(value))
 
     def _raw_position_angle(self) -> units.Angle:
-        return units.Angle(self._decimal_to_float(self._device.Position) * (pi/180.0))
+        position = units.Angle(
+            self._decimal_to_float(self._device.Position) * (pi/180.0)
+        )
+
+        # Kinesis sometimes reports exactly 0 immediately after MoveTo.
+        if float(position) == 0:
+            return self._prev_position
+        
+        self._prev_position = position
+        return position
 
     @staticmethod
     def _wrap_angle(angle: units.Angle) -> units.Angle:
@@ -153,6 +170,10 @@ class PRM1Z8(RotationStage):
         target_dec = to_decimal(self._api.common, float(target_angle) * (180.0/pi))
 
         self._device.MoveTo(target_dec, timeout_ms)
+
+    def _set_backlash(self, backlash: units.Angle):
+        b = to_decimal(self._api.common, float(backlash) * (180.0/pi))
+        self._device.SetBacklash(b)
 
     @property
     def serial_number(self) -> str:

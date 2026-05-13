@@ -6,7 +6,7 @@ from dirigo_thorlabs_stage.dcservo import PRM1Z8
 
 
 rstage = PRM1Z8(
-    serial_number="83838244",
+    serial_number="83837827",
     controller_kind="tcube"
 )
 
