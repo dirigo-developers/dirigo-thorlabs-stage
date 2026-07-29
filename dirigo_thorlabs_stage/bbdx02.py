@@ -124,7 +124,7 @@ class ThorlabsLinearMotor(LinearStage):
         self,
         stage_controller,
         api: BrushlessAPI,
-        position_limits: dict | None = None,
+        position_limits: dict | None = None, # To over-ride position limits (e.g., to limit them)
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -169,8 +169,7 @@ class ThorlabsLinearMotor(LinearStage):
             serial_number=self._channel.DeviceID,
         )
 
-    @cached_property
-    def position_limits(self) -> units.PositionRange:
+    def _get_device_position_limits(self) -> units.PositionRange:
         if self._position_limits is not None:
             return self._position_limits
 
@@ -185,8 +184,7 @@ class ThorlabsLinearMotor(LinearStage):
         
         return units.PositionRange(min_position, max_position)
 
-    @property
-    def position(self) -> units.Position:
+    def _get_device_position(self) -> units.Position:
         position = units.Position(
             from_decimal(
                 self._api.common,
@@ -201,7 +199,7 @@ class ThorlabsLinearMotor(LinearStage):
         self._prev_position = position
         return position
 
-    def move_to(self, position: units.Position, blocking: bool = False):
+    def _move_to_device(self, position: units.Position, blocking: bool = False):
         if not isinstance(position, units.Position):
             raise ValueError(
                 f"`move_to` requires a units.Position object, "
@@ -220,11 +218,7 @@ class ThorlabsLinearMotor(LinearStage):
             timeout_ms,
         )
 
-    @property
-    def moving(self) -> bool:
-        return bool(self._channel.IsDeviceBusy)
-
-    def move_velocity(self, velocity: units.Velocity):
+    def _move_velocity_device(self, velocity: units.Velocity):
         if not isinstance(velocity, units.Velocity):
             raise ValueError("velocity must be given in units.Velocity")
 
@@ -240,9 +234,12 @@ class ThorlabsLinearMotor(LinearStage):
             to_decimal(self._api.common, 1000 * float(velocity)),
             unit_type,
         )
-
         self._channel.MoveContinuousAtVelocity(motor_direction, velocity_device_units)
 
+    @property
+    def moving(self) -> bool:
+        return bool(self._channel.IsDeviceBusy)
+    
     def stop(self):
         self._channel.StopImmediate()
 
