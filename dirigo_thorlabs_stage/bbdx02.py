@@ -48,10 +48,8 @@ class BBD102Stage(MultiAxisStage):
         self._x_axis = ThorlabsLinearMotor(self._controller, api=self._api, **x_config)
         self._y_axis = ThorlabsLinearMotor(self._controller, api=self._api, **y_config)
 
-        if not self._x_axis.homed:
-            self._x_axis.home(blocking=False)
-        if not self._y_axis.homed:
-            self._y_axis.home(blocking=False)
+        if (not self._x_axis.homed) or (not self._y_axis.homed):
+            raise RuntimeError("XY stage is not homed. Home stage before using with Dirigo.")
 
     def _resolve_serial_number(self, serial_number: str | None, available_serial_numbers: list[str]):
         if serial_number is not None:
